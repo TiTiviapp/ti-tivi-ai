@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ti Tivi AI Chat</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: white;
+    }
+    .header {
+      background: #FF6600;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      font-weight: 700;
+    }
+    .messages {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+    .message {
+      padding: 0.75rem 1rem;
+      border-radius: 20px;
+      margin-bottom: 0.5rem;
+      max-width: 75%;
+    }
+    .user {
+      background: #FF6600;
+      color: white;
+      align-self: flex-end;
+      margin-left: auto;
+      text-align: right;
+    }
+    .bot {
+      background: #eaeaea;
+      color: #333;
+      align-self: flex-start;
+      margin-right: auto;
+      text-align: left;
+    }
+    .input-area {
+      display: flex;
+      padding: 1rem;
+      border-top: 1px solid #ddd;
+    }
+    input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      font-size: 1rem;
+    }
+    button {
+      margin-left: 0.5rem;
+      background: #FF6600;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.2rem;
+      border-radius: 20px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">Ti Tivi AI 💬</div>
+    <div id="messages" class="messages"></div>
+    <div class="input-area">
+      <input id="input" type="text" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    async function sendMessage() {
+      const input = document.getElementById('input');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      const messages = document.getElementById('messages');
+      messages.innerHTML += `<div class="message user">${msg}</div>`;
+      input.value = '';
+      messages.scrollTop = messages.scrollHeight;
+
+      try {
+        const res = await fetch('https://ti-tivi-ai.onrender.com/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ input: msg })
+        });
+        const data = await res.json();
+        const reply = data.reply || 'No response...';
+        messages.innerHTML += `<div class="message bot">${reply}</div>`;
+        messages.scrollTop = messages.scrollHeight;
+      } catch (err) {
+        messages.innerHTML += `<div class="message bot" style="color:red;">Error: ${err.message}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>
