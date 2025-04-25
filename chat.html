@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ti Tivi Chat</title>
+  <style>
+    body { font-family: 'Poppins', sans-serif; padding: 2rem; background: #fff3e6; }
+    #chatbox { max-width: 500px; margin: auto; background: white; padding: 1rem; border-radius: 20px; box-shadow: 0 0 12px rgba(0,0,0,0.1); }
+    .message { margin: 1rem 0; }
+    .user { text-align: right; color: #FF6600; }
+    .bot { text-align: left; color: #333; }
+    input { width: 80%; padding: 0.7rem; border-radius: 20px; border: 1px solid #ccc; }
+    button { padding: 0.7rem 1.2rem; border-radius: 20px; border: none; background: #FF6600; color: white; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+<div id="chatbox">
+  <div id="messages"></div>
+  <input id="input" type="text" placeholder="Type your message..." />
+  <button onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+async function sendMessage() {
+  const input = document.getElementById('input');
+  const msg = input.value;
+  if (!msg) return;
+
+  const messagesDiv = document.getElementById('messages');
+  messagesDiv.innerHTML += `<div class="message user">${msg}</div>`;
+  input.value = '';
+
+  const response = await fetch('http://127.0.0.1:5000/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ input: msg })
+  });
+
+  const data = await response.json();
+  const reply = data.reply || "No reply.";
+  messagesDiv.innerHTML += `<div class="message bot">${reply}</div>`;
+}
+</script>
+
+</body>
+</html>
