@@ -15,15 +15,15 @@ thread_id = None
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    user_input = request.json.get('input')
-    custom_assistant_id = request.json.get('assistant_id')
-    global thread_id
-
-    if not thread_id:
-        thread = openai.beta.threads.create()
-        thread_id = thread.id
-
     try:
+        user_input = request.json.get('input')
+        custom_assistant_id = request.json.get('assistant_id') or assistant_id
+        global thread_id
+
+        if not thread_id:
+            thread = openai.beta.threads.create()
+            thread_id = thread.id
+
         openai.beta.threads.messages.create(
             thread_id=thread_id,
             role="user",
@@ -32,7 +32,7 @@ def chat():
 
         run = openai.beta.threads.runs.create(
             thread_id=thread_id,
-            assistant_id=custom_assistant_id or assistant_id
+            assistant_id=custom_assistant_id
         )
 
         while True:
