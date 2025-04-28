@@ -95,7 +95,6 @@
 
       const resultsDiv = document.getElementById('results');
 
-      // Add loading card
       resultsDiv.innerHTML += `<div class="card">🔄 Searching for: "${query}"...</div>`;
       input.value = '';
 
@@ -103,7 +102,10 @@
         const response = await fetch('https://ti-tivi-ai.onrender.com/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ input: query })
+          body: JSON.stringify({
+            input: query,
+            assistant_id: "asst_Awh8xrhiFBQz2sTpOREe6T2i"  // 👈🏽 Using your Open Browser Assistant
+          })
         });
         const data = await response.json();
         const reply = data.reply || "Oops! No response found 😅";

@@ -1,19 +1,21 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import openai
 import time
 import os
 
 app = Flask(__name__)
+CORS(app)  # 👈🏽 Enable CORS
 
 openai.api_key = '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'
 
-assistant_id = 'asst_ugCI63m19mcgFmwnoJK56NY9'  # Default Assistant ID
+assistant_id = 'asst_ugCI63m19mcgFmwnoJK56NY9'  # Default assistant
 thread_id = None
 
 @app.route('/chat', methods=['POST'])
 def chat():
     user_input = request.json.get('input')
-    custom_assistant_id = request.json.get('assistant_id')  # 👈🏽 Allow custom assistant if needed
+    custom_assistant_id = request.json.get('assistant_id')  # Allow dynamic assistant selection
     global thread_id
 
     if not thread_id:
@@ -29,7 +31,7 @@ def chat():
 
         run = openai.beta.threads.runs.create(
             thread_id=thread_id,
-            assistant_id=custom_assistant_id or assistant_id  # 👈🏽 Use provided assistant_id or default
+            assistant_id=custom_assistant_id or assistant_id
         )
 
         while True:
