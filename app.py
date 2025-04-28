@@ -5,17 +5,18 @@ import time
 import os
 
 app = Flask(__name__)
-CORS(app)  # 👈🏽 Enable CORS
+CORS(app)  # Enable CORS for all routes
 
 openai.api_key = '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'
 
-assistant_id = 'asst_ugCI63m19mcgFmwnoJK56NY9'  # Default assistant
+# Default Assistant ID (Career Roadmap)
+assistant_id = 'asst_ugCI63m19mcgFmwnoJK56NY9'
 thread_id = None
 
 @app.route('/chat', methods=['POST'])
 def chat():
     user_input = request.json.get('input')
-    custom_assistant_id = request.json.get('assistant_id')  # Allow dynamic assistant selection
+    custom_assistant_id = request.json.get('assistant_id')
     global thread_id
 
     if not thread_id:
@@ -35,7 +36,10 @@ def chat():
         )
 
         while True:
-            run_status = openai.beta.threads.runs.retrieve(thread_id=thread_id, run_id=run.id)
+            run_status = openai.beta.threads.runs.retrieve(
+                thread_id=thread_id,
+                run_id=run.id
+            )
             if run_status.status == "completed":
                 break
             time.sleep(1)
