@@ -8,8 +8,12 @@ CORS(app)
 
 openai.api_key = "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"
 
-assistant_id = "asst_ugCI63m19mcgFmwnoJK56NY9"  # Career Roadmap Assistant
+assistant_id = "asst_ugCI63m19mcgFmwnoJK56NY9"  # Ti Tivi Career Coach
 thread_id = None
+
+@app.route('/')
+def index():
+    return "🟢 Ti Tivi AI is live. POST to /chat"
 
 @app.route('/chat', methods=['POST'])
 def chat():
@@ -20,22 +24,25 @@ def chat():
         return jsonify({'error': 'No input provided'}), 400
 
     try:
+        # Create a new thread if none exists
         if not thread_id:
             thread = openai.beta.threads.create()
             thread_id = thread.id
 
+        # Add user message to the thread
         openai.beta.threads.messages.create(
             thread_id=thread_id,
             role="user",
             content=user_input
         )
 
+        # Run assistant on that thread
         run = openai.beta.threads.runs.create(
             thread_id=thread_id,
             assistant_id=assistant_id
         )
 
-        # Wait for the assistant to respond
+        # Wait for completion
         while True:
             run_status = openai.beta.threads.runs.retrieve(
                 thread_id=thread_id,
@@ -47,20 +54,19 @@ def chat():
                 return jsonify({'error': 'Assistant failed'}), 500
             time.sleep(1)
 
+        # Get the latest assistant reply
         messages = openai.beta.threads.messages.list(thread_id=thread_id)
-        for msg in messages.data:
-            if msg.role == "assistant":
-                reply = msg.content[0].text.value
-                return jsonify({'reply': reply})
 
-        return jsonify({'error': 'No assistant reply found'}), 500
+        for msg in reversed(messages.data):
+            if msg.role == "assistant" and msg.content:
+                content = msg.content[0]
+                if hasattr(content, "text") and hasattr(content.text, "value"):
+                    return jsonify({'reply': content.text.value})
+
+        return jsonify({'reply': "We're improving Ti Tivi’s answers. Come back soon!"})
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/')
-def index():
-    return "✅ Ti Tivi AI Backend is Running!"
-
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=10000)
+    app.run(host='0.0.0.0', port=10000)
