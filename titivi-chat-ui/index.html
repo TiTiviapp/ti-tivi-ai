@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ti Tivi AI Career Coach</title>
   <style>
     body {
-      margin: 0;
       font-family: 'Poppins', sans-serif;
+      margin: 0;
       background: linear-gradient(to right, #000, #FF6600);
       color: white;
       height: 100vh;
@@ -15,11 +15,19 @@
       flex-direction: column;
     }
     .header {
-      padding: 1rem;
+      padding: 1.5rem 1rem 0.5rem;
+      text-align: center;
       background: #FF6600;
       font-weight: bold;
+      font-size: 1.8rem;
+    }
+    .subhead {
       text-align: center;
-      font-size: 1.5rem;
+      font-size: 1rem;
+      margin-top: 0.3rem;
+      margin-bottom: 1rem;
+      color: #fff;
+      opacity: 0.8;
     }
     .messages {
       flex: 1;
@@ -29,52 +37,55 @@
       flex-direction: column;
     }
     .message {
-      margin: 0.5rem 0;
-      max-width: 70%;
-      padding: 0.8rem 1rem;
+      max-width: 80%;
+      margin: 0.5rem;
+      padding: 0.9rem 1.2rem;
       border-radius: 20px;
+      font-size: 0.95rem;
     }
     .user {
-      align-self: flex-end;
       background: #FF6600;
       color: white;
+      align-self: flex-end;
     }
     .bot {
-      align-self: flex-start;
       background: #fff;
       color: black;
+      align-self: flex-start;
     }
     .input-area {
       display: flex;
       padding: 1rem;
       background: #111;
     }
-    .input-area input {
+    input {
       flex: 1;
-      padding: 0.8rem;
+      padding: 0.9rem;
       border-radius: 20px;
       border: none;
-      margin-right: 0.5rem;
       font-size: 1rem;
     }
-    .input-area button {
+    button {
       background: #FF6600;
       border: none;
-      padding: 0.8rem 1.2rem;
+      margin-left: 0.5rem;
+      padding: 0.9rem 1.2rem;
       border-radius: 20px;
       font-weight: bold;
-      cursor: pointer;
       color: white;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
-  <div class="header">Ti Tivi AI | Career Coach</div>
+  <div class="header">Ti Tivi AI Career Coach</div>
+  <div class="subhead">Start chatting to discover careers that actually fit you.</div>
+
   <div id="messages" class="messages"></div>
 
   <div class="input-area">
-    <input id="input" type="text" placeholder="Type your question...">
+    <input id="input" type="text" placeholder="e.g. I like Business and History...">
     <button onclick="sendMessage()">Send</button>
   </div>
 
@@ -89,25 +100,32 @@
       input.value = '';
       messages.scrollTop = messages.scrollHeight;
 
+      // Show thinking
+      const loading = document.createElement('div');
+      loading.className = 'message bot';
+      loading.innerText = 'Thinking...';
+      messages.appendChild(loading);
+      messages.scrollTop = messages.scrollHeight;
+
       try {
-        const response = await fetch('https://ti-tivi-ai.onrender.com/chat', {
+        const res = await fetch('https://ti-tivi-ai.onrender.com/chat', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ input: message })
         });
 
-        const data = await response.json();
-        const reply = data.reply || "Oops, no reply.";
+        const data = await res.json();
+        messages.removeChild(loading);
 
+        const reply = data.reply || "We're improving Ti Tivi’s answers. Come back soon!";
         messages.innerHTML += `<div class="message bot">${reply}</div>`;
         messages.scrollTop = messages.scrollHeight;
-      } catch (error) {
-        messages.innerHTML += `<div class="message bot" style="color:red;">Error: ${error.message}</div>`;
+      } catch (err) {
+        messages.removeChild(loading);
+        messages.innerHTML += `<div class="message bot" style="color:red;">Error: ${err.message}</div>`;
+        messages.scrollTop = messages.scrollHeight;
       }
     }
   </script>
-
 </body>
 </html>
