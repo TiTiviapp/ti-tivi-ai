@@ -2,24 +2,24 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import openai
 import time
-import os
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
-openai.api_key = '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'
+openai.api_key = "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"
 
-# Default Assistant ID (Career Roadmap)
-assistant_id = 'asst_ugCI63m19mcgFmwnoJK56NY9'
+assistant_id = "asst_ugCI63m19mcgFmwnoJK56NY9"  # Career Roadmap Assistant
 thread_id = None
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    try:
-        user_input = request.json.get('input')
-        custom_assistant_id = request.json.get('assistant_id') or assistant_id
-        global thread_id
+    global thread_id
+    user_input = request.json.get('input')
 
+    if not user_input:
+        return jsonify({'error': 'No input provided'}), 400
+
+    try:
         if not thread_id:
             thread = openai.beta.threads.create()
             thread_id = thread.id
@@ -32,9 +32,10 @@ def chat():
 
         run = openai.beta.threads.runs.create(
             thread_id=thread_id,
-            assistant_id=custom_assistant_id
+            assistant_id=assistant_id
         )
 
+        # Wait for the assistant to respond
         while True:
             run_status = openai.beta.threads.runs.retrieve(
                 thread_id=thread_id,
@@ -42,16 +43,24 @@ def chat():
             )
             if run_status.status == "completed":
                 break
+            elif run_status.status == "failed":
+                return jsonify({'error': 'Assistant failed'}), 500
             time.sleep(1)
 
         messages = openai.beta.threads.messages.list(thread_id=thread_id)
-        last_msg = messages.data[0].content[0].text.value
+        for msg in messages.data:
+            if msg.role == "assistant":
+                reply = msg.content[0].text.value
+                return jsonify({'reply': reply})
 
-        return jsonify({'reply': last_msg})
+        return jsonify({'error': 'No assistant reply found'}), 500
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/')
+def index():
+    return "✅ Ti Tivi AI Backend is Running!"
+
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host="0.0.0.0", port=10000)
